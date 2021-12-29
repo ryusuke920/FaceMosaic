@@ -9,7 +9,7 @@
 <body>
     <div id="app">
         <label for="file"></label>
-        <input type="file" name="file" ref="file" accept="image/*" @change="getInputFile">
+        <input type="file" name="file" ref="file" accept="image/jpeg" @change="getInputFile">
 
         <img ref="image" :src="selectedImage">
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
-    <title>Document</title>
+    <title>Face Mosaic</title>
 </head>
 <body>
     <div id="app">
@@ -13,7 +13,12 @@
 
         <img ref="image" :src="selectedImage">
 
+        <canvas ref="canvas"></canvas>
+
         <button :disabled="isImageLoad" @click="detectFaces">顔を隠す</button>
+        <input type="range" min="0" max="20" step="2" ref="slider" v-model="sliderValue">
+        <p>{{ sliderValue }}</p>
+        <a ref="download" href="#" download="result.jpg" @click="downloadResultImage">ダウンロード</a>
     </div>
     
     <script src="./js/script.js"></script>

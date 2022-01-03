@@ -11,14 +11,13 @@
         <label for="file"></label>
         <input type="file" name="file" ref="file" accept="image/jpeg" @change="getInputFile">
 
-        <img ref="image" :src="selectedImage">
-
         <canvas ref="canvas"></canvas>
 
-        <button :disabled="isImageLoad" @click="detectFaces">顔を隠す</button>
-        <input type="range" min="0" max="20" step="2" ref="slider" v-model="sliderValue">
-        <p>{{ sliderValue }}</p>
-        <a ref="download" href="#" download="result.jpg" @click="downloadResultImage">ダウンロード</a>
+        <p>モザイクの粒度：{{ sliderValue }}</p>
+        <input type="range" min="0" max="20" step="2" ref="slider" :disabled="!isImageLoad" v-model="sliderValue" @change="detectFaces">
+        <button :disabled="!isImageLoad">
+            <a ref="download" href="#" download="result.jpg" @click="downloadResultImage">ダウンロード</a>
+        </button>
     </div>
     
     <script src="./js/script.js"></script>

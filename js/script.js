@@ -2,10 +2,8 @@ let app = new Vue({
     el: '#app',
     data() {
         return {
-            selectedImage: "",
-            selectedImageHeight: 0,
-            selectedImageWidht: 0,
-            isImageLoad: true,
+            selectedFile: "",
+            isImageLoad: false,
             ctxImageData: "",
             sliderValue: 0,
             canvas: "",
@@ -14,6 +12,10 @@ let app = new Vue({
     },
     mounted() {// アプリ起動時の処理 
         this.canvas = this.$refs.canvas;
+        if(!this.canvas.getContext) {// canvas非対応
+            console.log("Canvas Not Supported");
+            return;
+        }
         this.ctx = this.canvas.getContext('2d');
     },
     methods: {
@@ -22,17 +24,9 @@ let app = new Vue({
          */
         getInputFile() {
             const selectedFiles = this.$refs.file;
-            const selectedFile = selectedFiles.files[0];
-  
-            this.showInputFile(selectedFile);
-        },
-        /**
-         * 選択された画像を表示
-         * @param {Object} file - 取得した画像ファイル
-         */
-        showInputFile(file) {
-            this.selectedImage = window.URL.createObjectURL(file);
-            this.isImageLoad = false;
+            this.selectedFile = selectedFiles.files[0];
+            this.isImageLoad = true;
+            this.detectFaces();// モザイクがかかっていない画像を表示
         },
         /**
          * 画像内の顔を認識して、モザイクをかける
@@ -43,42 +37,47 @@ let app = new Vue({
                 console.log("Not Supported")
                 return;
             }
-            
+    
             // imgタグを取得
-            const image = this.$refs.image;
+            const image = new Image();
+            image.src = window.URL.createObjectURL(this.selectedFile);
 
-            // canvasの大きさを画像の大きさに合わせる
-            this.canvas.height = image.naturalHeight;
-            this.canvas.width = image.naturalWidth;
+            image.onload = () => {
+                // canvasの大きさを画像の大きさに合わせる
+                this.canvas.height = image.naturalHeight;
+                this.canvas.width = image.naturalWidth;
 
-            // contextに画像を描写
-            this.ctx.drawImage(image, 0, 0);
-            
-            // スライダーの値が0の時はモザイクをかける必要はないため、終了
-            if(Number(this.sliderValue) === 0) return;
+                // contextに画像を描写
+                this.ctx.drawImage(image, 0, 0);
 
-            // contextに描画された画像データを取得
-            this.ctxImageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                // スライダーの値が0の時はモザイクをかける必要はないため、終了
+                if(Number(this.sliderValue) === 0) return;
 
-            // FaceDetectorAPIによる顔認識処理
-            const faceDetector = new window.FaceDetector();
-            faceDetector.detect(image).then((faces) => {
+                // contextに描画された画像データを取得
+                this.ctxImageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
 
-                faces.forEach((face) => {// 認識した全ての顔に以下の処理を行う
-                    let faceValue = face.boundingBox; // 画像内の顔情報を取得(画像内の顔の位置など)
-                    let mosaicSize = Number(this.sliderValue);
-                    
-                    // 取得した顔の位置情報を基に、モザイクをかける
-                    for(let y = faceValue.top; y <= faceValue.bottom-mosaicSize; y += mosaicSize) {
-                        for(let x = faceValue.left; x <= faceValue.right-mosaicSize; x += mosaicSize) {
-                            this.createMosaic(x, y, mosaicSize, mosaicSize);
+                // FaceDetectorAPIによる顔認識処理
+                const faceDetector = new window.FaceDetector();
+                faceDetector.detect(image).then((faces) => {
+
+                    faces.forEach((face) => {// 認識した全ての顔に以下の処理を行う
+                        let faceValue = face.boundingBox; // 画像内の顔情報を取得(画像内の顔の位置など)
+                        let mosaicSize = Number(this.sliderValue);
+                        
+                        // 取得した顔の位置情報を基に、モザイクをかける
+                        for(let y = faceValue.top; y <= faceValue.bottom-mosaicSize; y += mosaicSize) {
+                            for(let x = faceValue.left; x <= faceValue.right-mosaicSize; x += mosaicSize) {
+                                this.createMosaic(x, y, mosaicSize, mosaicSize);
+                            }
                         }
-                    }
-                })
+                    })
 
-            }).catch((e) => {
-                console.log(e);
-            })
+                }).catch((e) => {
+                    console.log(e);
+                })
+            }
+            
+            
         },
         /**
          * 画像にモザイクをかける

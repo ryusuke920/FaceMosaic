@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <title>Face Mosaic</title>
+</head>
+<body>
+    <div id="app">
+        <label for="file"></label>
+        <input type="file" name="file" ref="file" accept="image/jpeg" @change="getInputFile">
+
+        <canvas ref="canvas"></canvas>
+
+        <p>モザイクの粒度：{{ sliderValue }}</p>
+        <input type="range" min="0" max="20" step="2" ref="slider" :disabled="!isImageLoad" v-model="sliderValue" @change="detectFaces">
+        <button :disabled="!isImageLoad">
+            <a ref="download" href="#" download="result.jpg" @click="downloadResultImage">ダウンロード</a>
+        </button>
+    </div>
+    
+    <script src="./js/script.js"></script>
+</body>
+</html>
